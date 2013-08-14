@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <link rel='stylesheet' href='http://code.jquery.com/qunit/qunit-1.12.0.css' />
+    <script src='http://code.jquery.com/qunit/qunit-1.12.0.js'></script>
+    <script src='Bani.js'></script>
+    <script>
+    var application = new Application({
+	    'main': function() {
+	        var Dog = this.use('Dog');
+	    
+	        var Peter = new Dog();
+
+	        Peter.bark();
+	    },
+	    'class Animal': {
+	        'private name': 'Ani',
+	        'public says': function() {
+	            alert("Hi! I am a " + this.__class__ + " and my name is " + this.name);
+	        },
+	        'public setName': function(name) {
+	            this.name = name;
+	        }
+	    },
+	    'class Dog extends Animal': {
+	        'private name': 'Rover',
+	        'public bark': function() {
+	        	setInterval(function() {
+	        		console.log('bark...')
+	        	}, 900);
+	        },
+	        'public __construct': function() {
+	            this.setName("Peter");
+	            this.says();
+	        }
+	    }
+	});
+
+	application.run();
+	</script>
+</head>
+<body>
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+</body>
+</html>
