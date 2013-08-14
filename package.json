@@ -1,0 +1,27 @@
+{
+  "name": "BaniAMD",
+  "version": "1.0.0",
+  "description": "An AMD framework that uses closures to give better visibility control to your app development process!",
+  "main": "Bani.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zigzackattack/BaniAMD.git"
+  },
+  "keywords": [
+    "js",
+    "javascript",
+    "framework",
+    "amd",
+    "closure"
+  ],
+  "author": "Zachary Babtkis <zackbabtkis@gmail.com>",
+  "license": "MIT",
+  "gitHead": "4a2365a88b7689b6947aac5d2a5a9b9b1d090162",
+  "dependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-uglify": "~0.2.2"
+  }
+}
