@@ -9,38 +9,90 @@
 <body>
     <div id="qunit"></div>
     <div id="qunit-fixture"></div>
+
+    <div id='app'>
+    </div>
     
     <script>
-    var application = new Bani({
+    var app = new Bani({
 	    'main': function() {
-	        var Dog = this.use('Dog');
+	        var Controller = this.use('Controller');
 
-	        var Peter = new Dog();                         
+	        var AppController = new Controller();
+	    },
 
-	        Peter.bark();
+	    'class Controller': {
+	    	'public __construct': function() {
+	    		var Model = app.use('Model.Person');
+	    		var View = app.use('View.Person');
+
+	    		var model = new Model();
+
+	    		model.set({
+	    			name: 'Zack',
+	    			age: 23
+	    		});
+
+	    		var view = new View();
+
+	    		view.render(model.toJSON());
+	    	}
 	    },
-	    'class Animal': {
-	        'private name': 'Ani',
-	        'public says': function() {
-	            alert("Hi! I am a " + this.__class__ + " and my name is " + this.name);
-	        },
-	        'public setName': function(name) {
-	            this.name = name;
-	        }
+
+	    'class Model': {
+	    	'private attributes': {},
+	    	'private defaults': {},
+
+	    	'public __construct': function() {
+	    		for(var i in this.defaults) {
+	    			this.set(i, this.defaults[i]);
+	    		}
+	    	},
+
+	    	'public set': function(attrs, value) {
+	    		if(Bani.util.isObject(attrs)) {
+	    			for(var i in attrs) {
+		    			this.attributes[i] = attrs[i];
+		    		}
+	    		} else {
+	    			this.attributes[attrs] = value;
+	    		}
+	    	},
+
+	    	'public get': function(attr) {
+	    		return this.attributes[attr];
+	    	},
+	    	'public toJSON': function() {
+	    		return Bani.util.clone(this.attributes);
+	    	}
 	    },
-	    'class Dog extends Animal': {
-	        'private name': 'Rover',
-	        'public bark': function() {
-	        	console.log('bark bark bark');
-	        },
-	        'public __construct': function() {
-	            this.setName("Peter");
-	            this.says();
-	        }
+
+	    'class Model.Person extends Model': {
+	    	'private defaults': {
+	    		'name': "Alfred"
+	    	}
+	    },
+
+	    'class View': {
+	    	'private el': 'app',
+
+	    	'public __construct': function() {
+	    		this.el = document.getElementById(this.el);
+	    	},
+
+	    	'public render': function(model) {
+	    		this.el.innerHTML = this.html;
+	    	}
+	    },
+
+	    'class View.Person extends View': {
+	    	'public render': function(value) {
+	    		this.el.innerHTML = JSON.stringify(value);
+	    	}
 	    }
 	});
 
-	application.run();
+	app.run();
 	</script>
 </body>
 </html>

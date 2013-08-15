@@ -13,6 +13,7 @@
  *
  * ENJOY!
  */
+
 var Bani = (function() {
     var Application = function(objects) {
         var classes = new Application.util.EventEmitter();
@@ -26,6 +27,7 @@ var Bani = (function() {
          * @param String name name to register class under
          * @param Object cls  class structure to associate with class name
          */
+
         this.__addClass = function(name, cls) {
             if(classes[name]) {
                 throw new Error("Class of name " + name + " already exists");
@@ -40,12 +42,79 @@ var Bani = (function() {
          * and create object of public methods bound to fully qualified
          * class instance.
          *
-         * @param String name name of object to create instance of.
-         * 
+         * @param  String name name of object to create instance of.
          * @return object literal containing public and private instance objects.
          */
-        
-        this.__build = function(name) {
+
+        this.__build = function(name, isProto) {
+            var _this    = this,
+                classObj = classes[name];
+
+            var __protoConstructor = function(Class, Obj) {
+                if(Class.__extender) {
+                    __protoConstructor(classes[Class.__extender], Obj);
+                }
+                if(Class.__construct) {
+                    Class.__construct.value.apply(Obj);
+                }
+            }
+
+            var __buildInterface = function(Interface, Class, Obj) {
+                var propVal;
+
+                if(Class.__extender) {
+                    __buildInterface(Interface, classes[Class.__extender], Obj);
+                }
+                for(var prop in Class) {
+                    if(Class.hasOwnProperty(prop) && Class[prop].rule === 'public') {
+                        propVal = Class[prop].value;
+
+                        if(Bani.util.isFunction(propVal)) {
+
+                            /**
+                             * Bind the method (here propVal variable in closure)
+                             * on object interface to object instance using the
+                             * propVal in the closure as the method.
+                             */
+                            Interface[prop] = (function(propVal) {
+                                return function() {
+                                    return propVal.apply(Obj, arguments);
+                                }
+                            })(propVal);
+
+                        } else {
+                            Interface[prop] = propVal;
+                        }
+                    }
+                }
+            };
+
+            var Class = function() {
+                var Interface = {};
+
+                for(var i in classObj) {
+                    if(classObj[i].value) {
+                        this[i] = classObj[i].value;
+                    }
+                }
+
+                if(!isProto) {
+                    __protoConstructor(classObj, this);
+                    __buildInterface(Interface, classObj, this)
+                }
+
+                this.interface = Interface;
+            }
+
+            if(classObj.__extender) {
+                var Parent = this.__build(classObj.__extender, true);
+                Class.prototype = new Parent();
+            }
+
+            return Class;
+        }
+
+        /**this.__build = function(name) {
             var _this = this,
                 built,
                 publicObj = {},
@@ -70,9 +139,7 @@ var Bani = (function() {
                 privateConstructor.prototype = built.private;
                 publicObj = built.public;
             }
-    
-            var privateObj = new privateConstructor();
-    
+        
             for(var i in c) {
                 if(i === '__construct') continue;
                 if(privateObj.hasOwnProperty(i) && c[i].rule === 'public') {
@@ -81,13 +148,12 @@ var Bani = (function() {
             }
             
             return {private: privateObj, public: publicObj};
-        };
+        };*/
         
         /**
          * For requesting a class
          *
-         * @param String name name of class to use in function
-         *
+         * @param  String name name of class to use in function
          * @return Pseudo constructor for new class instance.
          */
         
@@ -95,8 +161,9 @@ var Bani = (function() {
             var _this = this;
             
             return function() {
-                var obj =_this.__build(name);
-                return obj.public;
+                var Obj = _this.__build(name);
+                
+                return new Obj().interface;
             }
         }
         
@@ -141,6 +208,9 @@ var Bani = (function() {
      *
      */
     Application.util = {
+        clone: function(obj) {
+            return JSON.parse(JSON.stringify(obj));
+        },
         log: function(type, message) {
             console.log(message);
         },
