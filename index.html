@@ -25,18 +25,31 @@
 	    	'public __construct': function() {
 	    		var Model = app.use('Model.Person');
 	    		var View = app.use('View.Person');
+                var Region = app.use('Region');
 
 	    		var model = new Model();
+                
+                var r1 = new Region();
+                var r2 = new Region();
 
 	    		model.set({
 	    			name: 'Zack',
 	    			age: 23
 	    		});
 
-	    		var view = new View();
+	    		this.view = new View();
 
-	    		view.render(model.toJSON());
-	    	}
+	    		this.view.render();
+                
+                this.registerRegion(r1);
+                this.registerRegion(r2);
+	    	},
+            'public registerRegion': function(region) {
+                if(this.view) {
+                    console.log(region.el);
+                    this.view.addRegion(region.el);
+                }
+            }
 	    },
 
 	    'class Model': {
@@ -74,21 +87,46 @@
 	    },
 
 	    'class View': {
-	    	'private el': 'app',
+	    	'public el': '#app',
 
 	    	'public __construct': function() {
-	    		this.el = document.getElementById(this.el);
+                this.viewport = Bani.util.clone(this.el);
+                
+                if(Bani.util.isString(this.el)) {
+                    switch(this.el[0]) {
+                        case '#':
+                            this.el = this.el.replace(/#/, '');
+                            this.el = document.getElementById(this.el);
+                            break;
+                        case '.':
+                            this.el = this.el.replace(/\./, '');
+                            this.el = document.getElementsByClassName(this.el);
+                            break;
+                        default:
+                            this.el = document.getElementsByTagName(this.el);
+                    }
+                }
+                console.log(this.el);
 	    	},
+            
+            'public addRegion': function(region) {
+                this.el.appendChild(region);
+            },
 
 	    	'public render': function(model) {
 	    		this.el.innerHTML = this.html;
 	    	}
 	    },
+        
+        'class Region extends View': {
+            'public __construct': function() {
+                this.el = document.createElement('div');
+                console.log(this.el);
+            }
+        },
 
 	    'class View.Person extends View': {
-	    	'public render': function(value) {
-	    		this.el.innerHTML = JSON.stringify(value);
-	    	}
+	    	'private html': 'Hello, my name is: Zack'
 	    }
 	});
 

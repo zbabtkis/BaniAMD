@@ -14,8 +14,10 @@
  * ENJOY!
  */
 
-var Bani = (function() {
-    var Application = function(objects) {
+var Bani = (function () {
+    'use strict';
+    
+    var Application = function (objects) {
         var classes = new Application.util.EventEmitter();
         
         this.appEmitter = new Application.util.EventEmitter();
@@ -28,14 +30,13 @@ var Bani = (function() {
          * @param Object cls  class structure to associate with class name
          */
 
-        this.__addClass = function(name, cls) {
-            if(classes[name]) {
+        this.__addClass = function (name, cls) {
+            if (classes[name]) {
                 throw new Error("Class of name " + name + " already exists");
-                return;
             }
             classes[name] = cls;
             classes.publish('ready:' + name);
-        }
+        };
         
         /**
          * Build valid javascript class from Bani class structure
@@ -46,30 +47,32 @@ var Bani = (function() {
          * @return object literal containing public and private instance objects.
          */
 
-        this.__build = function(name, isProto) {
+        this.__build = function (name, isProto) {
             var _this    = this,
-                classObj = classes[name];
+                classObj = classes[name],
+                __protoConstructor,
+                __buildInterface;
 
-            var __protoConstructor = function(Class, Obj) {
-                if(Class.__extender) {
+            __protoConstructor = function (Class, Obj) {
+                if (Class.__extender) {
                     __protoConstructor(classes[Class.__extender], Obj);
                 }
-                if(Class.__construct) {
+                if (Class.__construct) {
                     Class.__construct.value.apply(Obj);
                 }
             }
 
-            var __buildInterface = function(Interface, Class, Obj) {
+            __buildInterface = function (Interface, Class, Obj) {
                 var propVal;
 
-                if(Class.__extender) {
+                if (Class.__extender) {
                     __buildInterface(Interface, classes[Class.__extender], Obj);
                 }
-                for(var prop in Class) {
-                    if(Class.hasOwnProperty(prop) && Class[prop].rule === 'public') {
+                for (var prop in Class) {
+                    if (Class.hasOwnProperty(prop) && Class[prop].rule === 'public') {
                         propVal = Class[prop].value;
 
-                        if(Bani.util.isFunction(propVal)) {
+                        if (Bani.util.isFunction(propVal)) {
 
                             /**
                              * Bind the method (here propVal variable in closure)
@@ -113,42 +116,6 @@ var Bani = (function() {
 
             return Class;
         }
-
-        /**this.__build = function(name) {
-            var _this = this,
-                built,
-                publicObj = {},
-                c = classes[name];
-                    
-            var privateConstructor = function() {
-                for(var i in c) {
-                    if(i === '__construct') {
-                        continue;
-                    } else {
-                        this[i] = c[i].value;
-                    }
-                }
-    
-                if(c && c.__construct) {
-                    c.__construct.value.apply(this);
-                }
-            }
-    
-            if(c && c.__extender) {
-                built = _this.__build(c.__extender);
-                privateConstructor.prototype = built.private;
-                publicObj = built.public;
-            }
-        
-            for(var i in c) {
-                if(i === '__construct') continue;
-                if(privateObj.hasOwnProperty(i) && c[i].rule === 'public') {
-                    publicObj[i] = privateObj[i];
-                }
-            }
-            
-            return {private: privateObj, public: publicObj};
-        };*/
         
         /**
          * For requesting a class
